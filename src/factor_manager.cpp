@@ -1,6 +1,4 @@
 /*
-* Author: Jason Hughes and Varun Murali 
-* April 2025
 *
 */
 #include <mutex>
@@ -186,16 +184,16 @@ void FactorManager::addGpsFactor(int64_t timestamp, const Eigen::Vector3d& gps)
             pim->integrateMeasurement(data.accel, data.gyro, dt);
         }
 
-	auto prediction = this->predict(timestamp);
+	    auto prediction = this->predict(timestamp);
         auto diff = (std::get<0>(prediction) - meas).norm();
-	auto maxEllipseVal =  last_marginal_covariance.diagonal().maxCoeff();
-	_graph.add(gtsam::CombinedImuFactor(X(_key_index),
-                                          V(_key_index),
-                                          X(_key_index-1),
-                                          V(_key_index-1),
-                                          B(_key_index),
-                                          B(_key_index-1),
-                                          *pim));
+        auto maxEllipseVal =  last_marginal_covariance.diagonal().maxCoeff();
+        _graph.add(gtsam::CombinedImuFactor(X(_key_index),
+                                              V(_key_index),
+                                              X(_key_index-1),
+                                              V(_key_index-1),
+                                              B(_key_index),
+                                              B(_key_index-1),
+                                              *pim));
         
         
         gtsam::Rot3 mag_orient = gtsam::Rot3(_orient[0], _orient[1], _orient[2], _orient[3]);
@@ -204,14 +202,16 @@ void FactorManager::addGpsFactor(int64_t timestamp, const Eigen::Vector3d& gps)
         _initials.insert(X(_key_index), optimized_pose);
         _initials.insert(V(_key_index), last_velocity);
         _initials.insert(B(_key_index), bias);
-	// Ensure that if GPS is greater than 5m away from prediction we discard it.
-	// If the covariance is very large, we will always include it
-	if (diff > std::max(2.0 * maxEllipseVal, this->config["_gps_noise"])) {
-	    std::cout << "Rejecting GPS within" << maxEllipseVal << " " << diff << std::endl;
-    	    _last_gps_time = nanosecInt2Float(timestamp);
+	
+        // Ensure that if GPS is greater than 5m away from prediction we discard it.
+        // If the covariance is very large, we will always include it
+        if (diff > std::max(2.0 * maxEllipseVal, this->config["_gps_noise"])) 
+        {
+            std::cout << "Rejecting GPS within" << maxEllipseVal << " " << diff << std::endl;
+            _last_gps_time = nanosecInt2Float(timestamp);
             _key_index++;
-	    return;
-	}
+            return;
+	    }
     }
     
     _graph.add(gtsam::GPSFactor(X(_key_index), gtsam::Point3(meas(0), meas(1), meas(2)), _gps_noise));

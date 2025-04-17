@@ -79,6 +79,7 @@ class FactorManager
         ImuBuffer _imu_buffer;
 
         boost::shared_ptr<gtsam::PreintegrationCombinedParams> params;
+        
         gtsam::noiseModel::Isotropic::shared_ptr _prior_noise;
         gtsam::noiseModel::Isotropic::shared_ptr _odom_noise;
         gtsam::noiseModel::Isotropic::shared_ptr _gps_noise;
@@ -87,21 +88,26 @@ class FactorManager
         gtsam::Values _initials;
         gtsam::ISAM2Params _parameters;
         gtsam::ISAM2 _isam;
+        
         Eigen::Vector4d _orientation;
+        
         gtsam::Point3 _translation;
         gtsam::Pose3 optimized_pose;
         gtsam::Point3 last_velocity;
-	gtsam::Matrix last_marginal_covariance;
+	    gtsam::Matrix last_marginal_covariance;
         gtsam::imuBias::ConstantBias bias;
+        
         boost::shared_ptr<gtsam::PreintegratedCombinedMeasurements> pim;
         boost::shared_ptr<gtsam::PreintegratedCombinedMeasurements> pim_copy;
+        
         gtsam::Rot3 initial_orientation;
         gtsam::Pose3 navstate_pose;
         gtsam::NavState init_navstate;
         gtsam::NavState lastNavState;
         gtsam::GaussNewtonOptimizer* _optimizer;
+        
         Eigen::Vector3d _last_accel_meas;
         Eigen::Vector3d _last_gyro_meas;
-	Eigen::Vector4d _orient;
+    	Eigen::Vector4d _orient;
 };
 }

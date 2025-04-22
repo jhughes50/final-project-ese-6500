@@ -3,11 +3,12 @@
 */
 #include <mutex>
 
-#include "localization/factor_manager.hpp"
-#include "localization/util.hpp"
-#include "localization/imu_buffer.hpp"
+#include "tanqueray/core/factor_manager.hpp"
+#include "tanqueray/utils/util.hpp"
+#include "tanqueray/core/imu_buffer.hpp"
 #include <gtsam/slam/expressions.h>
 
+using namespace tanqueray;
 
 Eigen::Vector3d vector3(double x, double y, double z)
 {
@@ -25,23 +26,8 @@ double nanosecInt2Float(int64_t timestamp)
     return timestamp * 1e-9;
 }
 
-using namespace symbiote;
-
 FactorManager::FactorManager(const std::map<std::string, double>& config)
-{
-    this->config["acceleration_covariance"] = 0.00001;
-    this->config["gyroscope_covariance"] = 0.0001;
-    this->config["integration_covariance"] = 0.00001;
-    this->config["use_second_order"] = 0.0; // Using double as bool for map consistency
-    this->config["bias_covariance"] = 0.0001;
-    this->config["origin_x"] = 0.0;
-    this->config["origin_y"] = 0.0;
-
-    this->config["gravity"] = 9.81;
-    this->config["bias_num_measurements"] = 100.0;
-    this->config["gps_noise"] = 4.0;  // meters
-    this->config["odom_noise"] = 1.0;
-    
+{    
     for (const auto& kv : config) 
     {
         this->config[kv.first] = kv.second;

@@ -4,30 +4,48 @@
 *
 * A unit test to get Latitude and Longitude conversion to UTM
 */
-#include <iostream>
-#include <iomanip>
-#include <limits>
+#include <gtest/gtest.h>
 
-#include "localization/util.hpp"
-
-// TODO formalize with gtest
+#include "tanqueray/utils/util.hpp"
 
 const double lat = 39.941423;
 const double lon = -75.199414;
 
 const double gt_easting = 482963.5387620803;
 const double gt_northing = 4421274.811364001;
+const char zone[4] = "18S";
 
-int main()
+const double tolerance = 0.0001;
+
+
+TEST(ConversionTestSuite, LatLonToEasting)
 {
+    double easting, t0;
+    char t1[4];
 
-    double easting, northing;
-    char zone[4];
+    UTM::LLtoUTM(lat, lon, t0, easting, t1);
+    ASSERT_NEAR(easting, gt_easting, tolerance);
+}
 
-    UTM::LLtoUTM(lat, lon, northing, easting, zone);
+TEST(ConversionTestSuite, LatLonToNorthing)
+{
+    double northing, t0;
+    char t1[4];
 
-    std::cout << "Predicted: " << std::fixed << std::setprecision(10) << easting << " " << std::fixed << std::setprecision(10) << northing << " " << zone << std::endl;
-    std::cout << "Ground Truth: " << std::fixed << std::setprecision(10) << gt_easting << " " << std::fixed << std::setprecision(10) << gt_northing << " " << zone << std::endl;
+    UTM::LLtoUTM(lat, lon, northing, t0, t1);
+    ASSERT_NEAR(northing, gt_northing, tolerance);
+}
 
-    return 0;
+TEST(ConversionTestSuite, UTMToLatitude)
+{
+    double plat, temp;
+    UTM::UTMtoLL(gt_northing, gt_easting, zone, plat, temp);
+    ASSERT_NEAR(lat, plat, tolerance);
+}
+
+TEST(ConversionvTestSuite, UTMToLongitude)
+{
+    double plon, temp;
+    UTM::UTMtoLL(gt_northing, gt_easting, zone, temp, plon);
+    ASSERT_NEAR(lon, plon, tolerance);
 }

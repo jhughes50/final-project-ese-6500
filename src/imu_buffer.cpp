@@ -5,8 +5,7 @@
 */
 
 
-#include "localization/imu_buffer.hpp"
-
+#include "tanqueray/core/imu_buffer.hpp"
 
 ImuBuffer::ImuBuffer(size_t size = 20) : max_size_(size) { }
 

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(localization)
+project(tanqueray)
 #TODO better project name
 
 # Default to C++14
@@ -14,35 +14,48 @@ endif()
 # Find dependencies
 find_package(Eigen3 REQUIRED)
 find_package(GTSAM REQUIRED)
-
-set(node_plugins "")
+find_package(GTest REQUIRED)
+find_package(yaml-cpp REQUIRED)
 
 # Include directories
 include_directories(
   include
   ${EIGEN3_INCLUDE_DIR}
   ${GTSAM_INCLUDE_DIR}
+  ${yaml-cpp_INCLUDE_DIRS}
 )
 
 # Libraries  
 # Make sure to add your source files
-add_library(localization_component SHARED
+add_library(${PROJECT_NAME} SHARED
   src/imu_buffer.cpp
   src/factor_manager.cpp
+  src/params.cpp
 )
 
-target_link_libraries(localization_component PUBLIC
-  gtsam
+target_link_libraries(${PROJECT_NAME} PUBLIC
+    gtsam
+    yaml-cpp
+    tbb
 )
 
+enable_testing()
 # build utm test
 add_executable(utm_test test/test_ll_to_utm.cpp)
-target_include_directories(utm_test PUBLIC
-  ${CMAKE_CURRENT_SOURCE_DIR}/include
+target_link_libraries(utm_test
+  GTest::GTest
+  GTest::Main
+  ${PROJECT_NAME}
 )
 
-# Install include directories
-install(DIRECTORY include/
-  DESTINATION include/
+#build params test
+add_executable(params_test test/test_params.cpp)
+target_link_libraries(params_test
+  GTest::GTest
+  GTest::Main
+  ${PROJECT_NAME}
 )
 
+include(GoogleTest)
+gtest_discover_tests(utm_test)
+gtest_discover_tests(params_test)

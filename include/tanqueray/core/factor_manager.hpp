@@ -35,7 +35,7 @@ using gtsam::symbol_shorthand::X; // Pose
 Eigen::Vector3d vector3(double x, double y, double z);
 double nanosecInt2Float(int64_t timestamp);
 
-namespace symbiote 
+namespace tanqueray 
 {
 
 class FactorManager

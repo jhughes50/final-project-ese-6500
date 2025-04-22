@@ -14,7 +14,8 @@
 
 struct Params
 {
-    Params = default();
-    typename <typename T>
-    std::tuple<std::string, T> load(std::string path);   
+    Params() = default;
+
+    template <typename T>
+    std::map<std::string, T> load(std::string path);   
 };

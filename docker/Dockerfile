@@ -26,27 +26,36 @@ RUN useradd -U --uid ${user_id} -ms /bin/bash $USER \
  && adduser $USER sudo \
  && echo "$USER ALL=NOPASSWD: ALL" >> /etc/sudoers.d/$USER
 
+# add groups to get access to sensors
 USER $USER
 WORKDIR /home/$USER
 RUN sudo adduser $USER dialout
 RUN sudo adduser $USER tty 
 RUN sudo adduser $USER plugdev
 
+# ublox gps driver and deps
 RUN mkdir -p ws/src \
  && cd ws/src \
  && git clone https://github.com/KumarRobotics/ublox \
  && git clone https://github.com/tilk/rtcm_msgs \
  && git clone https://github.com/LORD-MicroStrain/ntrip_client
 
+# imu driver
 RUN sudo apt-get update \
  && sudo apt-get install -y ros-noetic-microstrain-inertial-driver ros-noetic-gtsam
 
 RUN sudo apt-get install -y python3-catkin-tools
 
+# install visualizer deps
+RUN sudo apt-get install -y python3-pip
+RUN pip3 install flask folium flask_socketio utm
+
+# build ros env
 RUN cd ~/ws \
  && catkin config --extend /opt/ros/noetic \
  && catkin build --no-status -DCMAKE_BUILD_TYPE=Release
 
+# make life nice inside docker
 RUN sudo chown $USER:$USER ~/.bashrc \
  && /bin/sh -c 'echo ". /opt/ros/noetic/setup.bash" >> ~/.bashrc' \
  && /bin/sh -c 'echo "source ~/ws/devel/setup.bash" >> ~/.bashrc' \

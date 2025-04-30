@@ -5,7 +5,7 @@
 
 #include "tanqueray/core/factor_manager.hpp"
 #include "tanqueray/core/imu_buffer.hpp"
-#include "tanqueray/utils/util.hpp"
+#include "tanqueray/utils/geodetics.hpp"
 #include <gtsam/slam/expressions.h>
 
 using namespace Tanqueray;
@@ -47,6 +47,7 @@ FactorManager::FactorManager(const std::map<std::string, double>& config)
     this->_prior_noise = gtsam::noiseModel::Isotropic::Sigma(6, this->config["gps_noise"]);
     this->_odom_noise = gtsam::noiseModel::Isotropic::Sigma(6, this->config["odom_noise"]);
     this->_gps_noise = gtsam::noiseModel::Isotropic::Sigma(3, this->config["gps_noise"]);
+    this->_heading_noise = gtsam::noiseModel::Isotropic::Sigma(1, this->config["heading_noise"]);
 
     this->_graph = gtsam::ExpressionFactorGraph();
     this->_params = gtsam::GaussNewtonParams();
@@ -119,7 +120,7 @@ void FactorManager::addGpsFactor(int64_t timestamp, const Eigen::Vector3d& gps)
     
     double easting, northing;
     char zone[4];
-    UTM::LLtoUTM(gps(0), gps(1), northing, easting, zone);
+    geodetics::LLtoUTM(gps(0), gps(1), northing, easting, zone);
     //std::cout << "Got utm " << easting << " " << northing << std::endl; 
     meas.head(2) << easting, northing;
     meas(2) = gps(2);
@@ -220,6 +221,17 @@ void FactorManager::addOdometryFactor(int64_t timestamp, const Eigen::Vector3d& 
     _key_index = key;
 }
 
+void FactorManager::addHeadingFactor(int64_t timestamp, const double& delta_heading)
+{
+    // add the heading as a between factor
+    if (!_initialized) return;
+    gtsam::Rot2 meas = gtsam::Rot2::fromAngle(delta_heading);
+    
+    gtsam::Key key = X(timestamp);
+    _graph.add(gtsam::BetweenFactor<gtsam::Rot2>(X(_key_index), key, delta_heading, _heading_noise));
+    _key_index = key;
+}
+
 void FactorManager::addImuFactor(int64_t timestamp, const Eigen::Vector3d& accel, const Eigen::Vector3d& gyro, const Eigen::Vector4d& orient) 
 {
     if (!_initialized) 
@@ -238,21 +250,8 @@ void FactorManager::addImuFactor(int64_t timestamp, const Eigen::Vector3d& accel
     Eigen::Vector3d accel_meas = accel;
     Eigen::Vector3d gyro_meas = gyro;
     double dT = nanosecInt2Float(timestamp) - _lastImuTime;
-    //
-    //          
-    //if (dT < 0) 
-    //{
-    //    return;
-    //}
-    //
-    //if (dT > 0.005) 
-    //{
-    //    _lastImuTime = nanosecInt2Float(timestamp);
-    //    return;
-    //}
-    //
-    //auto pim_copy boost::make_shared<gtsam::
     if (dT <=0) return;
+    
     pim_copy->integrateMeasurement(accel_meas, gyro_meas, dT);
     _lastImuTime = nanosecInt2Float(timestamp);
     _last_accel_meas = accel;

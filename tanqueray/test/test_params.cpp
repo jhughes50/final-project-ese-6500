@@ -15,7 +15,7 @@ TEST(ParamsTestSuite, DoubleGravity)
     *  by makeing sure gravity is 9.81
     */
     std::map<std::string, double> p;
-    p = params.load<double>("/home/jason/ws/src/project/test/params.yaml");
+    p = params.load<double>("/home/jason/ws/src/tanqueray/test/params.yaml");
     std::cout << p["gravity"] << std::endl;
     ASSERT_EQ(p["gravity"], 9.81);
 }

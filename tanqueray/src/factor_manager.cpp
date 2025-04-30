@@ -4,11 +4,11 @@
 #include <mutex>
 
 #include "tanqueray/core/factor_manager.hpp"
-#include "tanqueray/utils/util.hpp"
 #include "tanqueray/core/imu_buffer.hpp"
+#include "tanqueray/utils/util.hpp"
 #include <gtsam/slam/expressions.h>
 
-using namespace tanqueray;
+using namespace Tanqueray;
 
 Eigen::Vector3d vector3(double x, double y, double z)
 {
@@ -348,3 +348,29 @@ std::tuple<Eigen::Vector3d, Eigen::Vector4d, Eigen::Matrix3d> FactorManager::run
     return std::make_tuple(Eigen::Vector3d(translation.x(), translation.y(), translation.z()), quaternion, rotation.matrix());
 }
 
+gtsam::ExpressionFactorGraph FactorManager::getGraph()
+{
+    return _graph;
+}
+
+template <typename T>
+T FactorManager::getKeyIndex()
+{
+    if (typeid(T) == typeid(int))
+    {
+        int index_as_int = static_cast<int>(gtsam::symbolIndex(_key_index));
+        return index_as_int;
+    }
+    else
+    {
+        return _key_index;
+    }
+}
+
+bool FactorManager::isInitialized()
+{
+    return _initialized;
+}
+
+template int FactorManager::getKeyIndex<int>();
+template gtsam::Key FactorManager::getKeyIndex<gtsam::Key>();

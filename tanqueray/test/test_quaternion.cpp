@@ -7,7 +7,7 @@
 
 #include "tanqueray/utils/quaternion.hpp"
 
-using namespace tanqueray;
+using namespace Tanqueray;
 
 TEST(QuaternionTestSuite, QuaternionMultiplication)
 {

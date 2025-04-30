@@ -6,7 +6,7 @@
 
 #include <geometry_msgs/Quaternion.h>
 
-namespace tanqueray
+namespace Tanqueray
 {
 
 struct Quaternion

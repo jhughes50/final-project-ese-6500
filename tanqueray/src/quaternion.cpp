@@ -5,7 +5,7 @@
 
 #include "tanqueray/utils/quaternion.hpp"
 
-namespace tanqueray
+namespace Tanqueray
 {
 
 Quaternion::Quaternion(double x_in, double y_in, double z_in, double w_in)

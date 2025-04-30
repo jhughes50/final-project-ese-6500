@@ -26,8 +26,9 @@
 #include <stdlib.h>
 //#include "ofMathConstants.h"
 
-
-namespace UTM
+namespace Tanqueray
+{
+namespace geodetics
 {
     // Grid granularity for rounding UTM coordinates to generate MapXY.
     const double grid_size = 100000.0;    ///< 100 km grid
@@ -238,6 +239,7 @@ namespace UTM
         Long = LongOrigin + Long * RAD_TO_DEG;
         
     }
-} // end namespace UTM
+} // namespace geodetics
+} // end namespace tanqueray
 
 #endif

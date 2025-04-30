@@ -5,7 +5,7 @@
 
 #include "tanqueray/core/factor_manager.hpp"
 #include "tanqueray/core/imu_buffer.hpp"
-#include "tanqueray/utils/util.hpp"
+#include "tanqueray/utils/geodetics.hpp"
 #include <gtsam/slam/expressions.h>
 
 using namespace Tanqueray;
@@ -119,7 +119,7 @@ void FactorManager::addGpsFactor(int64_t timestamp, const Eigen::Vector3d& gps)
     
     double easting, northing;
     char zone[4];
-    UTM::LLtoUTM(gps(0), gps(1), northing, easting, zone);
+    geodetics::LLtoUTM(gps(0), gps(1), northing, easting, zone);
     //std::cout << "Got utm " << easting << " " << northing << std::endl; 
     meas.head(2) << easting, northing;
     meas(2) = gps(2);

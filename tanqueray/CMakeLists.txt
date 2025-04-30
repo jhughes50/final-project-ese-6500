@@ -72,8 +72,16 @@ target_link_libraries(quaternion_test
   ${PROJECT_NAME}
 )
 
+add_executable(heading_test test/test_heading.cpp)
+target_link_libraries(heading_test
+  GTest::GTest
+  GTest::Main
+  ${PROJECT_NAME}
+)
+
 include(GoogleTest)
 gtest_discover_tests(utm_test)
 gtest_discover_tests(params_test)
 gtest_discover_tests(factor_test)
 gtest_discover_tests(quaternion_test)
+gtest_discover_tests(heading_test)

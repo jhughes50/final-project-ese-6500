@@ -10,4 +10,4 @@ double:
   bias_num_measurements: 100.0
   gps_noise: 1.5
   odom_noise: 1.0
-
+  heading_noise: 0.1 #radians

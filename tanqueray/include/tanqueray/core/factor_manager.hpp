@@ -59,7 +59,8 @@ class FactorManager
         void addGpsFactor(int64_t timestamp, const Eigen::Vector3d& gps);
         void addOdometryFactor(int64_t timestamp, const Eigen::Vector3d& pose, const Eigen::Vector4d& quat);
         void addImuFactor(int64_t timestamp, const Eigen::Vector3d& accel, const Eigen::Vector3d& gyro, const Eigen::Vector4d& orient);
-                         
+        void addHeadingFactor(int64_t timestamp, const double& heading);
+
         gtsam::Values optimize();  
         std::tuple<Eigen::Vector3d, Eigen::Vector4d, Eigen::Matrix3d> runner();
 
@@ -94,6 +95,7 @@ class FactorManager
         gtsam::noiseModel::Isotropic::shared_ptr _prior_noise;
         gtsam::noiseModel::Isotropic::shared_ptr _odom_noise;
         gtsam::noiseModel::Isotropic::shared_ptr _gps_noise;
+        gtsam::noiseModel::Isotropic::shared_ptr _heading_noise;
         gtsam::ExpressionFactorGraph _graph;
         gtsam::GaussNewtonParams _params;
         gtsam::Values _initials;

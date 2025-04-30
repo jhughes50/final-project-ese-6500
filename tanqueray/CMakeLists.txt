@@ -31,6 +31,7 @@ add_library(${PROJECT_NAME} SHARED
   src/imu_buffer.cpp
   src/factor_manager.cpp
   src/params.cpp
+  src/quaternion.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
@@ -56,6 +57,23 @@ target_link_libraries(params_test
   ${PROJECT_NAME}
 )
 
+#build factor tests
+add_executable(factor_test test/test_factors.cpp)
+target_link_libraries(factor_test
+  GTest::GTest
+  GTest::Main
+  ${PROJECT_NAME}
+)
+
+add_executable(quaternion_test test/test_quaternion.cpp)
+target_link_libraries(quaternion_test
+  GTest::GTest
+  GTest::Main
+  ${PROJECT_NAME}
+)
+
 include(GoogleTest)
 gtest_discover_tests(utm_test)
 gtest_discover_tests(params_test)
+gtest_discover_tests(factor_test)
+gtest_discover_tests(quaternion_test)

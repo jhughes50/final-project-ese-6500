@@ -1,3 +1,8 @@
+/*
+* April 2025
+* Manage the Factor Graph
+*/
+
 #pragma once
 
 #include <gtsam/navigation/CombinedImuFactor.h>
@@ -35,7 +40,7 @@ using gtsam::symbol_shorthand::X; // Pose
 Eigen::Vector3d vector3(double x, double y, double z);
 double nanosecInt2Float(int64_t timestamp);
 
-namespace tanqueray 
+namespace Tanqueray 
 {
 
 class FactorManager
@@ -54,9 +59,15 @@ class FactorManager
         void addGpsFactor(int64_t timestamp, const Eigen::Vector3d& gps);
         void addOdometryFactor(int64_t timestamp, const Eigen::Vector3d& pose, const Eigen::Vector4d& quat);
         void addImuFactor(int64_t timestamp, const Eigen::Vector3d& accel, const Eigen::Vector3d& gyro, const Eigen::Vector4d& orient);
-                           
+                         
         gtsam::Values optimize();  
         std::tuple<Eigen::Vector3d, Eigen::Vector4d, Eigen::Matrix3d> runner();
+
+        gtsam::ExpressionFactorGraph getGraph();
+        bool isInitialized();
+
+        template <typename T>
+        T getKeyIndex();
 
     private:
         std::map<std::string, double> config;

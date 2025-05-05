@@ -32,15 +32,31 @@ class MapApp:
 
         self.setup_routes()
         self.gps_points = list()
+        self.odom_points = list()
 
     def setup_routes(self) -> None:
         @self.app_.route('/')
         def index():
             return render_template('index.html')
 
-    def update_map(self, lat : float, lon : float, popup : str ="New Point") -> None:
-        self.gps_points.append({"lat": lat, "lon": lon, "popup": popup})
-        self.socketio_.emit('gps_update', {'points': self.gps_points})
+    def update_map(self, lat: float, lon: float, source: str = "odom", popup: str = ""):
+        """Update map with new point and source type"""
+        point_data = {
+            "lat": lat,
+            "lon": lon,
+            "popup": popup,
+            "source": source
+        }
+        
+        if source == 'gps':
+            # print("[VISUALIZER] GPS point added")
+            self.gps_points.append(point_data)
+        elif source == 'odom':
+            # print("[VISUALIZER] Odom point added")
+            self.odom_points.append(point_data)
+            
+        # Send all points to frontend
+        self.socketio_.emit('gps_update', {"points": self.odom_points})
 
     def run_in_thread(self) -> None:
         thread = Thread(target=self.run)

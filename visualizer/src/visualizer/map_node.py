@@ -7,6 +7,7 @@
 import rospy
 from sensor_msgs.msg import NavSatFix
 from nav_msgs.msg import Odometry
+from sensor_msgs.msg import Imu
 from std_msgs.msg import String
 import utm
 
@@ -48,28 +49,30 @@ class MapNode:
         utm_x, utm_y, _, _ = utm.from_latlon(gps_x, gps_y)
         x = msg.pose.pose.position.x
         y = msg.pose.pose.position.y
-        # print(x, y)
-        # quaternion = (
-        #     msg.pose.pose.orientation.x,
-        #     msg.pose.pose.orientation.y,
-        #     msg.pose.pose.orientation.z,
-        #     msg.pose.pose.orientation.w
-        # )
+
         quaternion = self.imu_orientation
         rot = Rotation.from_quat(quaternion)
-        rotation_matrix = rot.as_matrix()
+        yaw_ned = rot.as_euler('zyx', degrees=False)[0]  # Extract NED yaw (Z-down)
+        yaw_enu =  20+np.pi/2-yaw_ned  # Convert to ENU yaw (Z-up)
+
+        cos_yaw = np.cos(yaw_enu)
+        sin_yaw = np.sin(yaw_enu)
+        rotation = np.array([[cos_yaw, -sin_yaw],
+                            [sin_yaw, cos_yaw]])
+        rotated_point = rotation @ np.array([x, y])  # Rotate local odometry to ENU
+        # rotation_matrix = rot.as_matrix()
 
         # rotate the point
-        rotated_point = rotation_matrix[:2, :2] @ np.array([x, y])
+        # rotated_point = rotation_matrix[:2, :2] @ np.array([x, y])
         # print("rotated_point", rotated_point)
         # print("utm_x, utm_y", utm_x, utm_y)
-        x = utm_x - rotated_point[0]
-        y = utm_y - rotated_point[1]
+        x = utm_x + rotated_point[0]
+        y = utm_y + rotated_point[1]
         # print(x, y)
 
         lat, lon = utm.to_latlon(x, y, self.zone_num_, self.zone_id_)
-        # print(f"odmlat: {lat}, lon: {lon}")
         self.app_.update_map(lat, lon, source='odom', popup=f"ODOM: {lat}, {lon}")
-
+        
     def imu_callback(self, msg : String) -> None:
         self.imu_orientation = msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w
+        # print("IMU orientation", self.imu_orientation)

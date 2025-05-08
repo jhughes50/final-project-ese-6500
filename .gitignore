@@ -1,3 +1,6 @@
 tanqueray/build/
 .vscode/
 visualizer/build/
+*.pyc
+__pycache__/
+/data

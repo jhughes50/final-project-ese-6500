@@ -26,6 +26,8 @@ var pointsLayer = L.layerGroup().addTo(map);
 var pathLayer = L.layerGroup().addTo(map);
 var odomPointsLayer = L.layerGroup().addTo(map);
 var odomPathLayer = L.layerGroup().addTo(map);
+var odom2PointsLayer = L.layerGroup().addTo(map);
+var odom2PathLayer = L.layerGroup().addTo(map);
 var objectsLayer = L.layerGroup().addTo(map);
 var connectionsLayer = L.layerGroup().addTo(map);
 
@@ -45,7 +47,8 @@ legend.onAdd = function (map) {
     // Format: [color, label]
     var items = [
         ['#FF3333', 'GPS'],
-        ['#4682B4', 'odom']
+        ['#4682B4', 'odom'],
+        ['#800080', 'Odom (IMU)']
     ];
     
     // Collect unique colors from objects to populate legend dynamically
@@ -183,3 +186,36 @@ socket.on('odom_update', function(data) {
     .bindPopup(lastPoint.popup || "Current Position")
     .addTo(odomPointsLayer);
 });
+
+socket.on('odom_w_imu_update', function(data) {
+    odom2PointsLayer.clearLayers();
+    odom2PathLayer.clearLayers();
+
+    if (data.points.length === 0) return;
+
+    var trackColor = '#800080';  // Purple, distinct from blue/red
+
+    var pathCoords = data.points.map(point => [point.lat, point.lon]);
+
+    if (pathCoords.length > 1) {
+        L.polyline(pathCoords, {
+            color: trackColor,
+            weight: 3,
+            opacity: 0.7
+        }).addTo(odom2PathLayer);
+    }
+
+    var lastPoint = data.points[data.points.length - 1];
+
+    L.circleMarker([lastPoint.lat, lastPoint.lon], {
+        radius: 8,
+        fillColor: trackColor,
+        color: '#FFFFFF',
+        weight: 2,
+        opacity: 1,
+        fillOpacity: 1
+    })
+    .bindPopup(lastPoint.popup || "IMU-based Odom")
+    .addTo(odom2PointsLayer);
+});
+

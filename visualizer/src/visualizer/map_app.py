@@ -33,6 +33,7 @@ class MapApp:
         self.setup_routes()
         self.gps_points = list()
         self.odom_points = list()
+        self.odom_w_imu_points = list()
 
     def setup_routes(self) -> None:
         @self.app_.route('/')
@@ -57,6 +58,13 @@ class MapApp:
         self.odom_points.append(point_data)
 
         self.socketio_.emit('odom_update', {"points": self.odom_points})
+    
+    def update_odom_w_imu(self, lat: float, lon: float, popup: str = "odom_w_imu") -> None:
+        point_data = {"lat": lat, "lon": lon, "popup": popup}
+
+        self.odom_w_imu_points.append(point_data)
+
+        self.socketio_.emit('odom_w_imu_update', {"points": self.odom_w_imu_points})
 
 
     def run_in_thread(self) -> None:

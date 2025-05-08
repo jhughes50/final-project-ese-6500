@@ -48,7 +48,7 @@ RUN sudo apt-get install -y python3-catkin-tools
 
 # install visualizer deps
 RUN sudo apt-get install -y python3-pip
-RUN pip3 install flask folium flask_socketio utm
+RUN pip3 install flask folium flask_socketio utm scipy
 
 # build ros env
 RUN cd ~/ws \

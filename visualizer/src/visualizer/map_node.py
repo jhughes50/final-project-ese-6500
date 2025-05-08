@@ -46,6 +46,8 @@ class MapNode:
         self.app_ = MapApp(path, ip = ip, port = port)
         self.app_.run_in_thread()
         self.imu_orientation = (0, 0, 0, 1)
+        self.last_imu_orientation = (0, 0, 0, 0)
+        self.imu_in = False
 
     def gps_callback(self, msg : NavSatFix) -> None:
         lat = msg.latitude
@@ -64,23 +66,56 @@ class MapNode:
             self.heading_ = sum(self.headings_) / len(self.headings_)
             self.heading_ = ((np.degrees(self.heading_)+360) % 360) - self.declination_
             self.heading_ = np.radians(self.heading_)
+            # self.heading_ = np.radians(-192.69) # UNCOMMENT FOR GRASS DATA
+            self.heading_ = np.radians(-285) # UNCOMMENT FOR BACK DATA
             self.heading_counter_ += 1
             self.heading_initialized_ = True
             print("Using heading: ", (np.degrees(self.heading_) + 360) % 360)
         self.app_.update_gps(lat, lon, popup=f"GPS: {lat:.2f}, {lon:.2f}")
 
     def odom_callback(self, msg : Odometry) -> None:
-        x = msg.pose.pose.position.x
-        y = msg.pose.pose.position.y
+        x_pose = msg.pose.pose.position.x
+        y_pose = msg.pose.pose.position.y
         
         if self.heading_initialized_:
             rot = np.array([[np.cos(self.heading_), -np.sin(self.heading_)], [np.sin(self.heading_), np.cos(self.heading_)]])
-            rotated = rot @ np.array([x,y])
-            x = self.initial_utm_[0] - rotated[0]
-            y = self.initial_utm_[1] - rotated[1]
+            rotated = rot @ np.array([x_pose,y_pose])
+            print("rotated from heading:", rotated)
+            x = self.initial_utm_[0] - rotated[1]
+            y = self.initial_utm_[1] + rotated[0]
+
      
             lat, lon = utm.to_latlon(x, y, self.zone_num_, self.zone_id_)
             self.app_.update_odom(lat, lon, popup=f"ODOM: {lat:.2f}, {lon:.2f}")
         
+        
+        if self.imu_in:
+            q_ned = np.array(self.imu_orientation)
+            q_ned = q_ned / np.linalg.norm(q_ned)
+            q_enu = np.array([ q_ned[1], q_ned[0], -q_ned[2], q_ned[3] ])  # x↔y, z↔-z
+            imu_rot_enu = Rotation.from_quat(q_enu)
+
+            # Extract yaw angle (rotation about Z-axis)
+            _, _, yaw = imu_rot_enu.as_euler('zyx')
+            # yaw += np.pi/2 # UNCOMMENT FOR GRASS DATA
+            yaw -+ np.pi/2
+            # Rotate the point in ENU
+            # 2x2 rotation matrix from yaw
+            rot = np.array([   
+                [np.cos(yaw), -np.sin(yaw)],
+                [np.sin(yaw),  np.cos(yaw)]
+            ])
+            rotated = rot @ np.array([x_pose, y_pose])
+            
+            print("rotated from imu:", rotated)
+            x = self.initial_utm_[0] - rotated[0]
+            y = self.initial_utm_[1] - rotated[1]
+
+            lat, lon = utm.to_latlon(x, y, self.zone_num_, self.zone_id_)
+            self.app_.update_odom_w_imu(lat, lon, popup=f"ODOM2: {lat:.2f}, {lon:.2f}")
+            self.imu_in = False
+
+        
     def imu_callback(self, msg : Imu) -> None:
+        self.imu_in = True
         self.imu_orientation = (msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w)

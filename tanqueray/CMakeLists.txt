@@ -16,10 +16,23 @@ find_package(Eigen3 REQUIRED)
 find_package(GTSAM REQUIRED)
 find_package(GTest REQUIRED)
 find_package(yaml-cpp REQUIRED)
+find_package(catkin REQUIRED COMPONENTS
+  roscpp
+  std_msgs
+  sensor_msgs
+  nav_msgs
+)
+
+catkin_package(
+  INCLUDE_DIRS include
+  LIBRARIES tanqueray
+  CATKIN_DEPENDS roscpp std_msgs sensor_msgs nav_msgs
+)
 
 # Include directories
 include_directories(
   include
+  ${catkin_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIR}
   ${GTSAM_INCLUDE_DIR}
   ${yaml-cpp_INCLUDE_DIRS}
@@ -32,14 +45,26 @@ add_library(${PROJECT_NAME} SHARED
   src/factor_manager.cpp
   src/params.cpp
   src/quaternion.cpp
+  ros/factor_node.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
     gtsam
     yaml-cpp
     tbb
+    ${catkin_LIBRARIES}
 )
 
+# executables
+add_executable(tanqueray_ros
+  ros/node.cpp
+)
+
+target_link_libraries(tanqueray_ros
+  ${PROJECT_NAME}
+)
+
+# TESTS
 enable_testing()
 # build utm test
 add_executable(utm_test test/test_ll_to_utm.cpp)

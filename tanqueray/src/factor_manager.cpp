@@ -110,7 +110,7 @@ void FactorManager::imuInitialize(const Eigen::Vector3d& accel_meas, const Eigen
 
 void FactorManager::addGpsFactor(int64_t timestamp, const Eigen::Vector3d& gps) 
 {
-    std::cout << "Adding GPS Factor" << std::endl;
+    //std::cout << "Adding GPS Factor" << std::endl;
     if (!_initialized) 
     {
         return;
@@ -125,7 +125,7 @@ void FactorManager::addGpsFactor(int64_t timestamp, const Eigen::Vector3d& gps)
     meas.head(2) << easting, northing;
     meas(2) = gps(2);
 
-    std::cout << meas << std::endl;
+    //std::cout << meas << std::endl;
     
     if (_key_index == 0) 
     {

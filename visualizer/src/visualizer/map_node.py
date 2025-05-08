@@ -62,7 +62,7 @@ class MapNode:
             self.heading_counter_ += 1
         elif self.heading_counter_ == 20:
             self.heading_ = sum(self.headings_) / len(self.headings_)
-            self.heading_ = ((np.degrees(self.heading_)+360) % 360) - self.declination_
+            self.heading_ = ((np.degrees(self.heading_)+360) % 360) - 2*self.declination_
             self.heading_ = np.radians(self.heading_)
             self.heading_counter_ += 1
             self.heading_initialized_ = True
@@ -76,8 +76,8 @@ class MapNode:
         if self.heading_initialized_:
             rot = np.array([[np.cos(self.heading_), -np.sin(self.heading_)], [np.sin(self.heading_), np.cos(self.heading_)]])
             rotated = rot @ np.array([x,y])
-            x = self.initial_utm_[0] - rotated[0]
-            y = self.initial_utm_[1] - rotated[1]
+            x = self.initial_utm_[0] + rotated[0]
+            y = self.initial_utm_[1] + rotated[1]
      
             lat, lon = utm.to_latlon(x, y, self.zone_num_, self.zone_id_)
             self.app_.update_odom(lat, lon, popup=f"ODOM: {lat:.2f}, {lon:.2f}")

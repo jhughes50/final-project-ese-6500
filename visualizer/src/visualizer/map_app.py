@@ -33,6 +33,7 @@ class MapApp:
         self.setup_routes()
         self.gps_points = list()
         self.odom_points = list()
+        self.glins_points = list()
 
     def setup_routes(self) -> None:
         @self.app_.route('/')
@@ -58,6 +59,12 @@ class MapApp:
 
         self.socketio_.emit('odom_update', {"points": self.odom_points})
 
+    def update_glins(self, lat: float, lon: float, popup: str = "glins") -> None: 
+        point_data = {"lat": lat, "lon": lon, "popup": popup}
+
+        self.glins_points.append(point_data)
+
+        self.socketio_.emit('glins_update', {"points": self.odom_points})
 
     def run_in_thread(self) -> None:
         thread = Thread(target=self.run)

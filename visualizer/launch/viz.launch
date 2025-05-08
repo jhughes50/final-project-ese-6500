@@ -8,5 +8,6 @@
         <param name="app/ip_address" value="$(arg ip)"/>
         <param name="app/port" value="$(arg port)"/>
         <remap from="/gps" to="/ublox/fix"/>
+        <remap from="/odom" to="/Odometry"/>
     </node>
 </launch>

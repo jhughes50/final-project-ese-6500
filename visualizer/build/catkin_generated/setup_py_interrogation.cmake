@@ -1,7 +1,0 @@
-set(visualizer_SETUP_PY_SETUP_MODULE "distutils.core")
-set(visualizer_SETUP_PY_VERSION "0.0.0")
-set(visualizer_SETUP_PY_SCRIPTS "")
-set(visualizer_SETUP_PY_PACKAGES "visualizer")
-set(visualizer_SETUP_PY_PACKAGE_DIRS "src/visualizer")
-set(visualizer_SETUP_PY_MODULES "")
-set(visualizer_SETUP_PY_MODULE_DIRS "")

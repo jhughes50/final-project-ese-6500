@@ -7,3 +7,4 @@ map:
   lon: -75.199492
   zone_number: 18
   zone_id: 'S'
+  declination: -11.82 #degrees, minus indicates west

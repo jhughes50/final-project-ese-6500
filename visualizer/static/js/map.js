@@ -24,19 +24,13 @@ console.log("Map initialized with center:", map.getCenter(), "zoom:", map.getZoo
 // Create layers for your data
 var pointsLayer = L.layerGroup().addTo(map);
 var pathLayer = L.layerGroup().addTo(map);
-var objectsLayer = L.layerGroup().addTo(map);
-var connectionsLayer = L.layerGroup().addTo(map);
-
-// Rest of your code remains the same...
-// Create layers
-var pointsLayer = L.layerGroup().addTo(map);
-var pathLayer = L.layerGroup().addTo(map);
+var odomPointsLayer = L.layerGroup().addTo(map);
+var odomPathLayer = L.layerGroup().addTo(map);
 var objectsLayer = L.layerGroup().addTo(map);
 var connectionsLayer = L.layerGroup().addTo(map);
 
 // Create a legend
 var legend = L.control({position: 'bottomright'});
-
 legend.onAdd = function (map) {
     var div = L.DomUtil.create('div', 'info legend');
     div.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
@@ -50,11 +44,8 @@ legend.onAdd = function (map) {
     // Define your legend items here
     // Format: [color, label]
     var items = [
-        ['#FF3333', 'Jackal Position'],
-        // Add your object types here with their colors
-        // For example:
-        //['#28B463', 'Objects'],
-        //['#6495ED', 'Roads'],
+        ['#FF3333', 'GPS'],
+        ['#4682B4', 'odom']
     ];
     
     // Collect unique colors from objects to populate legend dynamically
@@ -70,13 +61,19 @@ legend.onAdd = function (map) {
             }
         });
         
-        // Rebuild items array
-        items = [['#FF0000', 'Current Position/Track']];
+        // Start with base items - IMPORTANT: Preserve our original items
+        var updatedItems = [
+            ['#FF3333', 'GPS'], 
+            ['#4682B4', 'odom']
+        ];
         
         // Add object colors to items
         for (var color in objectColors) {
-            items.push([color, objectColors[color]]);
+            updatedItems.push([color, objectColors[color]]);
         }
+        
+        // Update items reference
+        items = updatedItems;
         
         // Update legend HTML
         updateLegendHTML();
@@ -150,4 +147,39 @@ socket.on('gps_update', function(data) {
     })
     .bindPopup(lastPoint.popup || "Current Position")
     .addTo(pointsLayer);
+});
+
+socket.on('odom_update', function(data) {
+    odomPointsLayer.clearLayers();
+    odomPathLayer.clearLayers();
+
+    if (data.points.length === 0) return;
+
+    var trackColor = '#4682B4';
+
+    var pathCoords = data.points.map(point => [point.lat, point.lon]);
+    
+    // Draw the connecting line for all points
+    if (pathCoords.length > 1) {
+        L.polyline(pathCoords, {
+            color: trackColor,
+            weight: 3,
+            opacity: 0.7
+        }).addTo(odomPathLayer);
+    }
+    
+    // Add only the most recent point as a red circle marker
+    var lastPoint = data.points[data.points.length - 1];
+    
+    // Use circleMarker instead of standard marker
+    L.circleMarker([lastPoint.lat, lastPoint.lon], {
+        radius: 8,
+        fillColor: trackColor,
+        color: '#FFFFFF',  // White border
+        weight: 2,
+        opacity: 1,
+        fillOpacity: 1
+    })
+    .bindPopup(lastPoint.popup || "Current Position")
+    .addTo(odomPointsLayer);
 });

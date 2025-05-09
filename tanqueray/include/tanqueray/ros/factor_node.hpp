@@ -14,6 +14,7 @@
 
 #include "tanqueray/core/factor_manager.hpp"
 #include "tanqueray/utils/params.hpp"
+#include "tanqueray/utils/quaternion.hpp"
 
 class FactorNode
 {
@@ -43,4 +44,7 @@ class FactorNode
         bool initialized_;
         bool use_sim_time_;
         Params params;
+
+        Tanqueray::Quaternion prev_quat_;
+        Eigen::Vector3d prev_position_;
 };

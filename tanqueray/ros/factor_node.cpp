@@ -67,8 +67,8 @@ void FactorNode::odomCallback(const nav_msgs::Odometry::ConstPtr& msg)
 {
     if (!initialized_)
     {
-        prev_position_ << msg.pose.pose.position.x, msg.pose.pose.position.y, msg.pose.pose.position.z;
-        prev_quat_ = Quaternion(msg.pose.pose.orientation);
+        prev_position_ << msg->pose.pose.position.x, msg->pose.pose.position.y, msg->pose.pose.position.z;
+        prev_quat_ = Tanqueray::Quaternion(msg->pose.pose.orientation);
     }
     // calculate the difference between current and prev
 

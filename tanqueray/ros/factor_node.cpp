@@ -71,7 +71,28 @@ void FactorNode::odomCallback(const nav_msgs::Odometry::ConstPtr& msg)
         prev_quat_ = Tanqueray::Quaternion(msg->pose.pose.orientation);
     }
     // calculate the difference between current and prev
+    Eigen::Vector3d current_position(msg->pose.pose.position.x,
+                                     msg->pose.pose.position.y,
+                                     msg->pose.pose.position.z);
+    Tanqueray::Quaternion current_quat(msg->pose.pose.orientation);
 
+    Eigen::Vector3d between_position = (current_position - prev_position_).array().abs();
+    Tanqueray::Quaternion between_quat = current_quat - prev_quat_;
+
+    int64_t timestamp;
+    if (use_sim_time_)
+    {
+        timestamp = getTime(ros::Time::now());
+    }
+    else
+    {
+        timestamp = getTime(msg->header.stamp);
+    }
+
+    factor_manager_.addOdometryFactor(timestamp, between_position, between_quat.toEigen());
+
+    prev_position_ = current_position;
+    prev_quat_ = current_quat;
 }
 
 void FactorNode::gpsCallback(const sensor_msgs::NavSatFix::ConstPtr& msg)

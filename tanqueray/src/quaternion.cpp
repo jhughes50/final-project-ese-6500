@@ -52,4 +52,10 @@ Quaternion operator*(const Quaternion& q1, const Quaternion& q2)
 
     return Quaternion(x_new, y_new, z_new, w_new);
 }
+
+Eigen::Vector4d Quaternion::toEigen()
+{
+    Eigen::Vector4d ret(w, x, y, z);
+    return ret;
+}
 }

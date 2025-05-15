@@ -26,8 +26,8 @@ var pointsLayer = L.layerGroup().addTo(map);
 var pathLayer = L.layerGroup().addTo(map);
 var odomPointsLayer = L.layerGroup().addTo(map);
 var odomPathLayer = L.layerGroup().addTo(map);
-var objectsLayer = L.layerGroup().addTo(map);
-var connectionsLayer = L.layerGroup().addTo(map);
+var glinsPointsLayer = L.layerGroup().addTo(map);
+var glinsPathLayer = L.layerGroup().addTo(map);
 
 // Create a legend
 var legend = L.control({position: 'bottomright'});
@@ -45,7 +45,8 @@ legend.onAdd = function (map) {
     // Format: [color, label]
     var items = [
         ['#FF3333', 'GPS'],
-        ['#4682B4', 'odom']
+        ['#4682B4', 'Odometry'],
+        ['#50C878', 'Tanqueray'],
     ];
     
     // Collect unique colors from objects to populate legend dynamically
@@ -64,7 +65,8 @@ legend.onAdd = function (map) {
         // Start with base items - IMPORTANT: Preserve our original items
         var updatedItems = [
             ['#FF3333', 'GPS'], 
-            ['#4682B4', 'odom']
+            ['#4682B4', 'Odometry'],
+            ['#50C878', 'Tanqueray'],
         ];
         
         // Add object colors to items
@@ -182,4 +184,39 @@ socket.on('odom_update', function(data) {
     })
     .bindPopup(lastPoint.popup || "Current Position")
     .addTo(odomPointsLayer);
+});
+
+socket.on('glins_update', function(data) {
+    glinsPointsLayer.clearLayers();
+    glinsPathLayer.clearLayers();
+
+    if (data.points.length === 0) return;
+
+    var trackColor = '#50C878';
+
+    var pathCoords = data.points.map(point => [point.lat, point.lon]);
+    
+    // Draw the connecting line for all points
+    if (pathCoords.length > 1) {
+        L.polyline(pathCoords, {
+            color: trackColor,
+            weight: 3,
+            opacity: 0.7
+        }).addTo(glinsPathLayer);
+    }
+    
+    // Add only the most recent point as a red circle marker
+    var lastPoint = data.points[data.points.length - 1];
+    
+    // Use circleMarker instead of standard marker
+    L.circleMarker([lastPoint.lat, lastPoint.lon], {
+        radius: 8,
+        fillColor: trackColor,
+        color: '#FFFFFF',  // White border
+        weight: 2,
+        opacity: 1,
+        fillOpacity: 1
+    })
+    .bindPopup(lastPoint.popup || "Current Position")
+    .addTo(glinsPointsLayer);
 });

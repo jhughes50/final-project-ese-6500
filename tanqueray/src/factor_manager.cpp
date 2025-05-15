@@ -69,8 +69,8 @@ FactorManager::FactorManager(const std::map<std::string, double>& config)
 boost::shared_ptr<gtsam::PreintegrationCombinedParams> FactorManager::defaultParams(double g)
 {
     auto params = gtsam::PreintegrationCombinedParams::MakeSharedD(g);
-    double kGyroSigma = (0.5 * M_PI / 180.0) / 60.0;  // 0.5 degree ARW
-    double kAccelSigma = 0.001; // / 60.0;  // 10 cm VRW
+    double kGyroSigma = (1.5 * M_PI / 180.0) / 60.0;  // 0.5 degree ARW
+    double kAccelSigma = 0.01; // / 60.0;  // 10 cm VRW
     Eigen::Matrix3d I = Eigen::Matrix3d::Identity();
     params->setGyroscopeCovariance(std::pow(kGyroSigma, 2) * I);
     params->setAccelerometerCovariance(std::pow(kAccelSigma, 2) * I);
@@ -110,7 +110,7 @@ void FactorManager::imuInitialize(const Eigen::Vector3d& accel_meas, const Eigen
 
 void FactorManager::addGpsFactor(int64_t timestamp, const Eigen::Vector3d& gps) 
 {
-    std::cout << "Adding GPS Factor" << std::endl;
+    //std::cout << "Adding GPS Factor" << std::endl;
     if (!_initialized) 
     {
         return;
@@ -125,7 +125,7 @@ void FactorManager::addGpsFactor(int64_t timestamp, const Eigen::Vector3d& gps)
     meas.head(2) << easting, northing;
     meas(2) = gps(2);
 
-    std::cout << meas << std::endl;
+    //std::cout << meas << std::endl;
     
     if (_key_index == 0) 
     {
@@ -152,7 +152,7 @@ void FactorManager::addGpsFactor(int64_t timestamp, const Eigen::Vector3d& gps)
 
         std::vector<std::pair<double, ImuData>> measurements = _imu_buffer.get(_last_gps_time, nanosecInt2Float(timestamp)); 
         size_t num_measurements = measurements.size();
-        if (num_measurements < 5) return;
+        //if (num_measurements < 5) return;
 
         for (size_t i = 0; i < measurements.size(); ++i)
         {
@@ -212,13 +212,11 @@ void FactorManager::addOdometryFactor(int64_t timestamp, const Eigen::Vector3d& 
     {
         return;
     }
-    
     gtsam::Rot3 rotation = gtsam::Rot3::Quaternion(quat(0), quat(1), quat(2), quat(3));
     gtsam::Pose3 meas(rotation, gtsam::Point3(pose(0), pose(1), pose(2)));
-    gtsam::Key key = X(timestamp);
-    
+
+    gtsam::Key key = X(_key_index);
     _graph.add(gtsam::BetweenFactor<gtsam::Pose3>(X(_key_index), key, meas, _odom_noise));
-    _key_index = key;
 }
 
 void FactorManager::addHeadingFactor(int64_t timestamp, const double& delta_heading)
@@ -227,7 +225,7 @@ void FactorManager::addHeadingFactor(int64_t timestamp, const double& delta_head
     if (!_initialized) return;
     gtsam::Rot2 meas = gtsam::Rot2::fromAngle(delta_heading);
     
-    gtsam::Key key = X(timestamp);
+    gtsam::Key key = X(_key_index);
     _graph.add(gtsam::BetweenFactor<gtsam::Rot2>(X(_key_index), key, delta_heading, _heading_noise));
     _key_index = key;
 }
@@ -245,7 +243,7 @@ void FactorManager::addImuFactor(int64_t timestamp, const Eigen::Vector3d& accel
     double timestamp_f = nanosecInt2Float(timestamp);
 
     std::lock_guard<std::mutex> lock(std::mutex);
-    _imu_buffer.add(timestamp_f, accel, gyro, orient);
+    //_imu_buffer.add(timestamp_f, accel, gyro, orient);
 
     Eigen::Vector3d accel_meas = accel;
     Eigen::Vector3d gyro_meas = gyro;

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <Eigen/Dense>
 #include <geometry_msgs/Quaternion.h>
 
 namespace Tanqueray
@@ -20,6 +21,8 @@ struct Quaternion
     
     Quaternion inverse() const;
     Quaternion conjugate() const;
+
+    Eigen::Vector4d toEigen();
 
     double x;
     double y;

@@ -1,12 +1,18 @@
 <launch>
     <arg name="ip" default="127.0.0.1"/>
     <arg name="port" default="5000"/>
+    <arg name="gps" default="true"/>
+    <arg name="odom" default="true"/>
+    <arg name="glins" default="true"/>
 
     <node pkg="visualizer" type="ros_node.py" name="visualizer" output="screen">
         <rosparam command="load" file="$(find visualizer)/config/map.yaml"/>
         <param name="path" value="$(find visualizer)"/>
         <param name="app/ip_address" value="$(arg ip)"/>
         <param name="app/port" value="$(arg port)"/>
+        <param name="gps" value="$(arg gps)"/>
+        <param name="odom" value="$(arg odom)"/>
+        <param name="glins" value="$(arg glins)"/>
         <remap from="/gps" to="/ublox/fix"/>
         <remap from="/odom" to="/Odometry"/>
     </node>

@@ -39,6 +39,7 @@ FactorManager::FactorManager(const std::map<std::string, double>& config)
     this->imu2body = Eigen::Matrix3d::Identity();
     
     this->_initialized = false;
+    this->_gps_initialized = false;
     this->_key_index = 0;
     this->_lastOptimizeTime = 0.0;
     this->_lastImuTime = 0.0;
@@ -69,8 +70,8 @@ FactorManager::FactorManager(const std::map<std::string, double>& config)
 boost::shared_ptr<gtsam::PreintegrationCombinedParams> FactorManager::defaultParams(double g)
 {
     auto params = gtsam::PreintegrationCombinedParams::MakeSharedD(g);
-    double kGyroSigma = (1.5 * M_PI / 180.0) / 60.0;  // 0.5 degree ARW
-    double kAccelSigma = 0.01; // / 60.0;  // 10 cm VRW
+    double kGyroSigma = (0.5 * M_PI / 180.0) / 60.0;  // 0.5 degree ARW
+    double kAccelSigma = 0.001; // / 60.0;  // 10 cm VRW
     Eigen::Matrix3d I = Eigen::Matrix3d::Identity();
     params->setGyroscopeCovariance(std::pow(kGyroSigma, 2) * I);
     params->setAccelerometerCovariance(std::pow(kAccelSigma, 2) * I);
@@ -152,7 +153,7 @@ void FactorManager::addGpsFactor(int64_t timestamp, const Eigen::Vector3d& gps)
 
         std::vector<std::pair<double, ImuData>> measurements = _imu_buffer.get(_last_gps_time, nanosecInt2Float(timestamp)); 
         size_t num_measurements = measurements.size();
-        //if (num_measurements < 5) return;
+        if (num_measurements < 5) return;
 
         for (size_t i = 0; i < measurements.size(); ++i)
         {
@@ -243,7 +244,7 @@ void FactorManager::addImuFactor(int64_t timestamp, const Eigen::Vector3d& accel
     double timestamp_f = nanosecInt2Float(timestamp);
 
     std::lock_guard<std::mutex> lock(std::mutex);
-    //_imu_buffer.add(timestamp_f, accel, gyro, orient);
+    _imu_buffer.add(timestamp_f, accel, gyro, orient);
 
     Eigen::Vector3d accel_meas = accel;
     Eigen::Vector3d gyro_meas = gyro;

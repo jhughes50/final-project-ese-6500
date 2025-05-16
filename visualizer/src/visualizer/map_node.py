@@ -36,13 +36,15 @@ class MapNode:
 
         self.heading_ = np.radians(-odom_offset)
         self.initialized_ = False
-
+        self.odom_initialized_ = False
         self.app_ = MapApp(path, ip = ip, port = port)
         self.app_.run_in_thread()
         self.imu_orientation = (0, 0, 0, 1)
 
         self.glat_ = None
         self.glon_ = None
+        self.initial_x =0.0
+        self.initial_y =0.0
         self.timer_ = rospy.Timer(rospy.Duration(0.2), self.glins_update)
         if rospy.get_param("/visualizer/gps"):
             rospy.Subscriber("/gps", NavSatFix, self.gps_callback)
@@ -52,7 +54,7 @@ class MapNode:
             rospy.Subscriber("/glins", Odometry, self.glins_callback)
         
         rospy.Subscriber("/imu/data", Imu, self.imu_callback)
-
+    
 
 
     def glins_callback(self, msg : Odometry) -> None:
@@ -81,8 +83,13 @@ class MapNode:
         self.app_.update_gps(lat, lon, popup=f"GPS: {lat:.2f}, {lon:.2f}")
 
     def odom_callback(self, msg : Odometry) -> None:
-        x = msg.pose.pose.position.x
-        y = msg.pose.pose.position.y
+        if not self.odom_initialized_:
+            self.initial_x = msg.pose.pose.position.x
+            self.initial_y = msg.pose.pose.position.x
+            self.odom_initialized_ = True
+            return
+        x = msg.pose.pose.position.x + self.initial_x
+        y = msg.pose.pose.position.y + self.initial_y
         
         if self.initialized_: 
             rot = np.array([[np.cos(self.heading_), -np.sin(self.heading_)], [np.sin(self.heading_), np.cos(self.heading_)]])

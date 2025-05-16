@@ -81,7 +81,7 @@ class FactorManager
         Eigen::Matrix3d imu2body;
         
         bool _initialized;
-        
+        bool _gps_initialized;        
         gtsam::Key _key_index;
     
         double _lastOptimizeTime;

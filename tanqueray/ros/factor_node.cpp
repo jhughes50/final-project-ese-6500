@@ -97,6 +97,7 @@ void FactorNode::odomCallback(const nav_msgs::Odometry::ConstPtr& msg)
 
 void FactorNode::gpsCallback(const sensor_msgs::NavSatFix::ConstPtr& msg)
 {
+
     Eigen::Vector3d gps_factor;
     gps_factor(0) = msg->latitude;
     gps_factor(1) = msg->longitude;
@@ -113,7 +114,7 @@ void FactorNode::gpsCallback(const sensor_msgs::NavSatFix::ConstPtr& msg)
     }
 
     factor_manager_.addGpsFactor(timestamp, gps_factor);
-    
+    //std::cout << "optimizing with time " << timestamp << std::endl;
     auto [position, quaternion, rotation] = factor_manager_.runner();
 
     if (!initialized_) initialized_ = true;

@@ -8,4 +8,4 @@ map:
   zone_number: 18
   zone_id: 'S'
   declination: -11.82 #degrees, minus indicates west
-  offset: 285.0
+  offset: 196.0
